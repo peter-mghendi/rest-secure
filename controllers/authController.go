@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"go-contacts/models"
-	u "go-contacts/utils"
 	"net/http"
+	"rest-secure/models"
+	u "rest-secure/utils"
 )
 
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
