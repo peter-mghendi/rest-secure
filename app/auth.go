@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 	"fmt"
-	"go-contacts/models"
-	u "lens/utils"
 	"net/http"
 	"os"
+	"rest-secure/models"
+	u "rest-secure/utils"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"

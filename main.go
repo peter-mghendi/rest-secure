@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"go-contacts/app"
 	"net/http"
 	"os"
+	"rest-secure/app"
 
 	"github.com/gorilla/mux"
 )
@@ -18,8 +18,6 @@ func main() {
 	if port == "" {
 		port = "8000" //localhost
 	}
-
-	fmt.Println(port)
 
 	fmt.Printf("Serving on localhost:%v/api", port)
 	err := http.ListenAndServe(":"+port, router) //Launch the app, visit localhost:8000/api
