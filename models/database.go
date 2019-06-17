@@ -11,6 +11,7 @@ import (
 )
 
 var db *gorm.DB
+var err error
 
 func init() {
 
@@ -27,7 +28,7 @@ func init() {
 	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password) //Build connection string
 	fmt.Println(dbURI)
 
-	db, err := gorm.Open("postgres", dbURI)
+	db, err = gorm.Open("postgres", dbURI)
 	if err != nil {
 		fmt.Print(err)
 	}
