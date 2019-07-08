@@ -7,6 +7,7 @@ import (
 	u "rest-secure/utils"
 )
 
+// CreateAccount is the handler function for adding a new account into the databsse
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	account := &models.Account{}
 	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur
@@ -19,6 +20,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// Authenticate is the handler function for aurhorizing user login
 var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	account := &models.Account{}
 	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur

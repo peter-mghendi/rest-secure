@@ -7,19 +7,19 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// Person struct, as stored in the database
 type Person struct {
 	gorm.Model
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
-	UserID    uint   `json:"user_id"` //The user that this person belongs to
+	UserID    uint   `json:"user_id"`
 }
 
-/*
- This struct function validate the required parameters sent through the http request body
-returns message and true if the requirement is met
-*/
+
+// Validate checks the required parameters sent through the http request body
+// returns message and true if the requirement is met
 func (person *Person) Validate() (map[string]interface{}, bool) {
 	if person.FirstName == "" {
 		return u.Message(false, "Person's first name should be on the payload"), false
@@ -37,10 +37,10 @@ func (person *Person) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "User is not recognized"), false
 	}
 
-	//All the required parameters are present
 	return u.Message(true, "success"), true
 }
 
+// Create adds a new person to the database
 func (person *Person) Create() map[string]interface{} {
 	if resp, ok := person.Validate(); !ok {
 		return resp
@@ -51,18 +51,20 @@ func (person *Person) Create() map[string]interface{} {
 	return resp
 }
 
-func GetPerson(id uint) *Person {
+// GetPerson returns a single person, if present, that matches provided criteria
+func GetPerson(user, id uint) *Person {
 	person := &Person{}
-	err := GetDB().Table("persons").Where("id = ?", id).First(person).Error
+	err := GetDB().Where(&Person{UserID: user}).First(&person, id).Error
 	if err != nil {
 		return nil
 	}
 	return person
 }
 
+// GetPerson returns an array of persons for current user
 func GetPersons(user uint) []*Person {
 	persons := make([]*Person, 0)
-	err := GetDB().Table("persons").Where("user_id = ?", user).Find(&persons).Error
+	err := GetDB().Where(&Person{UserID: user}).Find(&persons).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
