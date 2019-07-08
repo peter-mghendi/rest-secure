@@ -69,7 +69,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		// Proceed with the request and set caller to retrieved user
-		fmt.Sprintf("User %", tk.UserID) // HACK for debugging
+		fmt.Sprintf("User %", tk.UserID)
 		ctx := context.WithValue(r.Context(), "user", tk.UserID)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)

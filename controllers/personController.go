@@ -11,7 +11,7 @@ import (
 )
 
 // CreatePerson is the handler function for addind a person to the database
-var CreatePerson = func(w http.ResponseWriter, r *http.Request) {
+func CreatePerson (w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
 	person := &models.Person{}
 	err := json.NewDecoder(r.Body).Decode(person)
@@ -20,12 +20,12 @@ var CreatePerson = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	person.UserID = user
-	resp := person.Create()
+	resp := person.Create(App.DB)
 	u.Respond(w, resp)
 }
 
 // GetPerson is the handler function for adding a specific person to the database
-var GetPerson = func(w http.ResponseWriter, r *http.Request) {
+func GetPerson (w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
@@ -33,16 +33,16 @@ var GetPerson = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Context().Value("user").(uint)
-	data := models.GetPerson(user, uint(id))
+	data := models.GetPerson(user, uint(id), App.DB)
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	u.Respond(w, resp)
 }
 
 // GetPersonsFor is the handler function for fetching current user's persons
-var GetPersonsFor = func(w http.ResponseWriter, r *http.Request) {
+func GetPersonsFor (w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
-	data := models.GetPersons(user)
+	data := models.GetPersons(user, App.DB)
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	u.Respond(w, resp)

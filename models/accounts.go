@@ -27,7 +27,7 @@ type Account struct {
 }
 
 // Validate checks incoming user details
-func (account *Account) Validate() (map[string]interface{}, bool) {
+func (account *Account) Validate(db *gorm.DB) (map[string]interface{}, bool) {
 
 	if !strings.Contains(account.Email, "@") {
 		return u.Message(false, "Email address is required"), false
@@ -38,7 +38,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	}
 
 	temp := &Account{}
-	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
+	err := db.Table("accounts").Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
@@ -49,22 +49,20 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() map[string]interface{} {
-
-	if resp, ok := account.Validate(); !ok {
+func (account *Account) Create (db *gorm.DB) map[string]interface{} {
+	if resp, ok := account.Validate(db); !ok {
 		return resp
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
 
-	GetDB().Create(account)
+	db.Create(account)
 
 	if account.ID <= 0 {
 		return u.Message(false, "Failed to create account, connection error.")
 	}
 
-	//Create new JWT token for the newly registered account
 	tk := &Token{UserID: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
@@ -77,9 +75,9 @@ func (account *Account) Create() map[string]interface{} {
 }
 
 // Login authorizes a user and assigns JWT token
-func Login(email, password string) map[string]interface{} {
+func Login(email, password string, db *gorm.DB) map[string]interface{} {
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
+	err := db.Table("accounts").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Email address not found")
@@ -88,7 +86,7 @@ func Login(email, password string) map[string]interface{} {
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return u.Message(false, "Invalid login credentials. Please try again")
 	}
 	account.Password = ""
@@ -104,10 +102,10 @@ func Login(email, password string) map[string]interface{} {
 }
 
 // GetUser fetches the user from db
-func GetUser(u uint) *Account {
+func GetUser(u uint, db *gorm.DB) *Account {
 	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
-	if acc.Email == "" { //User not found!
+	db.Table("accounts").Where("id = ?", u).First(acc)
+	if acc.Email == "" {
 		return nil
 	}
 

@@ -2,32 +2,35 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
-	"rest-secure/app"
-	"rest-secure/controllers"
+	a "rest-secure/app"
 
-	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
-func main() {
-	router := mux.NewRouter()
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
-	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
-	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
-	router.HandleFunc("/api/me/persons", controllers.GetPersonsFor).Methods("GET")
+var app a.App
+var dbHost, dbUser, dbName, dbPass, dbType, port string
 
-	router.HandleFunc("/api/persons/new", controllers.CreatePerson).Methods("POST")
-	router.HandleFunc("/api/persons/{id}", controllers.GetPerson).Methods("GET")
+func init() {
+	e := godotenv.Load()
+	if e != nil {
+		fmt.Print(e)
+	}
 
-	port := os.Getenv("PORT")
+	dbHost = os.Getenv("db_host")
+	dbUser = os.Getenv("db_user")
+	dbName = os.Getenv("db_name")
+	dbPass = os.Getenv("db_pass")
+	dbType = os.Getenv("db_type")
+
+	port = os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
 	}
+}
 
-	fmt.Printf("Serving on localhost:%v\n", port)
-	err := http.ListenAndServe(":"+port, router)
-	if err != nil {
-		fmt.Print(err)
-	}
+func main() {
+	app := a.App{}
+	app.Init(dbHost, dbUser, dbName, dbPass, dbType)
+	app.Run(port)
 }

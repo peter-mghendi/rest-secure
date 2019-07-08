@@ -41,20 +41,20 @@ func (person *Person) Validate() (map[string]interface{}, bool) {
 }
 
 // Create adds a new person to the database
-func (person *Person) Create() map[string]interface{} {
+func (person *Person) Create(db *gorm.DB) map[string]interface{} {
 	if resp, ok := person.Validate(); !ok {
 		return resp
 	}
-	GetDB().Create(person)
+	db.Create(person)
 	resp := u.Message(true, "success")
 	resp["person"] = person
 	return resp
 }
 
 // GetPerson returns a single person, if present, that matches provided criteria
-func GetPerson(user, id uint) *Person {
+func GetPerson(user, id uint, db *gorm.DB) *Person {
 	person := &Person{}
-	err := GetDB().Where(&Person{UserID: user}).First(&person, id).Error
+	err := db.Where(&Person{UserID: user}).First(&person, id).Error
 	if err != nil {
 		return nil
 	}
@@ -62,9 +62,9 @@ func GetPerson(user, id uint) *Person {
 }
 
 // GetPerson returns an array of persons for current user
-func GetPersons(user uint) []*Person {
+func GetPersons(user uint, db *gorm.DB) []*Person {
 	persons := make([]*Person, 0)
-	err := GetDB().Where(&Person{UserID: user}).Find(&persons).Error
+	err := db.Where(&Person{UserID: user}).Find(&persons).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
