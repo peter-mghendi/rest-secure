@@ -5,18 +5,18 @@ import (
 	u "rest-secure/utils"
 
 	"github.com/jinzhu/gorm"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Person struct, as stored in the database
 type Person struct {
-	gorm.Model
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	UserID    uint   `json:"user_id"`
+	Base
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	UserID    uuid.UUID `json:"user_id"`
 }
-
 
 // Validate checks the required parameters sent through the http request body
 // returns message and true if the requirement is met
@@ -32,9 +32,6 @@ func (person *Person) Validate() (map[string]interface{}, bool) {
 	}
 	if person.Email == "" {
 		return u.Message(false, "Phone number should be on the payload"), false
-	}
-	if person.UserID <= 0 {
-		return u.Message(false, "User is not recognized"), false
 	}
 
 	return u.Message(true, "success"), true
@@ -52,17 +49,17 @@ func (person *Person) Create(db *gorm.DB) map[string]interface{} {
 }
 
 // GetPerson returns a single person, if present, that matches provided criteria
-func GetPerson(user, id uint, db *gorm.DB) *Person {
+func GetPerson(user, id uuid.UUID, db *gorm.DB) *Person {
 	person := &Person{}
-	err := db.Where(&Person{UserID: user}).First(&person, id).Error
+	err := db.Where(&Person{Base: Base{ID: id}, UserID: user}).First(person).Error
 	if err != nil {
 		return nil
 	}
 	return person
 }
 
-// GetPerson returns an array of persons for current user
-func GetPersons(user uint, db *gorm.DB) []*Person {
+// GetPersons returns an array of persons for current user
+func GetPersons(user uuid.UUID, db *gorm.DB) []*Person {
 	persons := make([]*Person, 0)
 	err := db.Where(&Person{UserID: user}).Find(&persons).Error
 	if err != nil {
